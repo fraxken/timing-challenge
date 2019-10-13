@@ -1,0 +1,7 @@
+{
+    "extends": "@slimio/eslint-config",
+    "rules": {
+        "jsdoc/require-jsdoc": "off",
+        "func-style": "off"
+    }
+}
