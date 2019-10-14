@@ -4,40 +4,22 @@
 const meriyah = require("meriyah");
 const astring = require("astring");
 
-// Require Internal Dependencies
-const { createFunction, createForStmt, all } = require("./ast/ecmascript");
-const { setImmediate, nextTick, log, createRequire } = require("./ast/built-in");
-const {
-    createCallExpr,
-    createIdentifier,
-    createVariable,
-    createLiteral,
-    buildMemberExpr
-} = require("./ast/utils");
+// Require presets
+const one = require("./preset/iterate_timeout");
+const two = require("./preset/iife_async");
 
-// const nodesRoot = [];
-// nodesRoot.push(createRequire("EventEmitter", "events"));
-// const fn = createFunction("callMe", [log("A", createIdentifier("val"))], true);
-// fn.params.push(createIdentifier("val"));
-// nodesRoot.push(fn);
+const nodesRoot = [];
+nodesRoot.push(two.create());
 
-// nodesRoot.push(createVariable("promises", "const", {
-//     type: "ArrayExpression", elements: []
-// }));
+console.log(JSON.stringify(nodesRoot, null, 2))
 
-// const fnExpr = createCallExpr(buildMemberExpr("callMe"), [createIdentifier("i")], false);
-// const callExpr = createCallExpr(buildMemberExpr("promises", "push"), [fnExpr]);
-// const forStmt = createForStmt([callExpr], createLiteral(5));
-// nodesRoot.push(forStmt);
-// nodesRoot.push(all([createIdentifier("promises")]));
+for (const node of nodesRoot) {
+    const code = astring.generate(node);
+    console.log(code);
+}
 
-// console.log(JSON.stringify(ast, null, 4));
-// for (const node of nodesRoot) {
-//     const code = astring.generate(node);
-//     console.log(code);
-// }
+// const code = `(async() => {
 
-const code = `new Promise((res) => {
-}).then(console.log)`;
-const { body } = meriyah.parse(code);
-console.log(JSON.stringify(body, null, 4));
+// })().then(console.log)`;
+// const { body } = meriyah.parse(code);
+// console.log(JSON.stringify(body, null, 4));

@@ -18,38 +18,48 @@ function buildMemberExpr(...arr) {
     if (arr.length === 0) {
         throw new Error("unable to process an empty array!");
     }
+    const last = arr.pop();
+    const property = Array.isArray(last) ?
+        CallExpr(typeof last[0] === "string" ? createIdentifier(last[0]) : last[0], last[1] || []) :
+        createIdentifier(last);
+
+    if (arr.length === 0) {
+        return property;
+    }
     else if (arr.length === 1) {
-        return createIdentifier(arr[0]);
-    }
-    else if (arr.length === 2) {
-        return {
-            type: "MemberExpression",
-            object: createIdentifier(arr[0]),
-            computed: false,
-            property: createIdentifier(arr[1])
-        };
-    }
-    else {
-        const last = arr.pop();
+        const object = Array.isArray(arr[0]) ?
+            CallExpr(typeof arr[0][0] === "string" ? createIdentifier(arr[0][0]) : arr[0][0], arr[0][1] || []) :
+            createIdentifier(arr[0]);
 
         return {
             type: "MemberExpression",
-            object: buildMemberExpr(...arr),
+            object,
             computed: false,
-            property: createIdentifier(last)
+            property
         };
     }
-}
 
-function createCallExpr(callee, args = [], asExpr = true) {
-    const expression = {
-        type: "CallExpression", callee, arguments: args
+    return {
+        type: "MemberExpression",
+        object: buildMemberExpr(...arr),
+        computed: false,
+        property
     };
-
-    return asExpr ? { type: "ExpressionStatement", expression } : expression;
 }
 
-function createBlock(type, body = []) {
+function ExprStmt(expression) {
+    return { type: "ExpressionStatement", expression };
+}
+
+function CallExpr(callee, args = []) {
+    return { type: "CallExpression", callee, arguments: args };
+}
+
+function ExprCall(callee, args) {
+    return ExprStmt(CallExpr(callee, args));
+}
+
+function BlockStmt(type = "function", body = [], async = false) {
     if (!kBlockType.has(type)) {
         throw new Error(`unknown block type ${type}`);
     }
@@ -61,7 +71,7 @@ function createBlock(type, body = []) {
             type: "BlockStatement",
             body
         },
-        async: false,
+        async,
         generator: false
     };
 
@@ -73,7 +83,7 @@ function createBlock(type, body = []) {
     return tmp;
 }
 
-function createVariable(name, kind = "let", init = null) {
+function Var(name, kind = "let", init = null) {
     if (typeof name !== "string") {
         throw new TypeError("name must be a string");
     }
@@ -94,7 +104,7 @@ function createVariable(name, kind = "let", init = null) {
     };
 }
 
-function createUpdateExpr(identifier, operator = "++") {
+function UpExpr(identifier, operator = "++") {
     return {
         type: "UpdateExpression",
         argument: createIdentifier(identifier),
@@ -103,7 +113,7 @@ function createUpdateExpr(identifier, operator = "++") {
     };
 }
 
-function createAwait(arg = null) {
+function Await(arg = null) {
     return {
         type: "ExpressionStatement",
         expression: {
@@ -113,7 +123,7 @@ function createAwait(arg = null) {
     };
 }
 
-function createNew(callee, args = []) {
+function New(callee, args = []) {
     return {
         type: "ExpressionStatement",
         expression: {
@@ -124,14 +134,24 @@ function createNew(callee, args = []) {
     };
 }
 
+function Return(arg = null) {
+    return {
+        type: "ReturnStatement",
+        argument: arg
+    };
+}
+
 module.exports = {
-    createVariable,
+    ExprStmt,
+    CallExpr,
+    ExprCall,
+    Var,
     createLiteral,
     createIdentifier,
     buildMemberExpr,
-    createCallExpr,
-    createBlock,
-    createUpdateExpr,
-    createAwait,
-    createNew
+    BlockStmt,
+    Return,
+    UpExpr,
+    Await,
+    New
 };
