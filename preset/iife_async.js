@@ -1,10 +1,25 @@
 "use strict";
 
-const utils = require("../src/utils");
-const node = require("../src/nodejs");
-const ecma = require("../src/ecmascript");
+// Require Third-party Dependencies
+const {
+    Expression: {
+        ArrowFunctionExpression,
+        CallExpression,
+        BinaryExpression,
+        UpdateExpression,
+        ExpressionStatement,
+        MemberExpression
+    },
+    Statements: { ForStatement, Block, Return },
+    Identifier,
+    Literal,
+    VariableDeclaration
+} = require("node-estree");
 
-// CODE GENERATED:
+// Require Internal Dependencies
+const { logExpr, logStr, nextTick } = require("../src/utils.js");
+
+// CODE TO GENERATE:
 // (async res => {
 //     for (let i = 0; i < 1000000; i++) { }
 //     process.nextTick(() => {
@@ -13,21 +28,29 @@ const ecma = require("../src/ecmascript");
 //     return "H";
 // })().then(console.log);
 
-function create() {
-    const body = [];
-    body.push(ecma.createForStmt(void 0, utils.createLiteral(1e6)));
+function generate() {
+    const iifeBody = [
+        nextTick([logStr("A")]),
+        Return(new Literal("H"))
+    ];
+    {
+        const id = new Identifier("i");
+        const init = VariableDeclaration.createOne("let", id.name, new Literal(0));
+        const test = BinaryExpression("<", id, new Literal(1e6));
+        const update = UpdateExpression("++", void 0, id);
 
-    const nextTick = node.nextTick([ecma.createArrow(false, utils.ExprStmt(node.log("A")))]);
-    body.push(utils.ExprStmt(nextTick));
-    body.push(utils.Return(utils.createLiteral("H")));
+        iifeBody.unshift(ForStatement(init, test, update, Block()));
+    }
 
-    const fn = ecma.createArrow(true, ...body);
-    fn.params.push(utils.createIdentifier("res"));
+    const IIFE = MemberExpression(CallExpression(
+        ArrowFunctionExpression(iifeBody, void 0, true)
+    ), new Identifier("then"));
 
-    return utils.ExprCall(utils.buildMemberExpr([fn], ["then", [node.tty.log]]));
+    return ExpressionStatement(CallExpression(IIFE, [logExpr]));
 }
 
 module.exports = {
+    level: "medium",
     mustBeRoot: true,
-    create
+    generate
 };

@@ -1,22 +1,12 @@
 "use strict";
 
-const EventEmitter = require("events");
-
 async function a(val) {
     console.log("A", val);
 }
-
 setImmediate(() => console.log("B"));
 
-const ee = new EventEmitter();
-ee.on("foo", async(val) => {
-    process.nextTick((val) => a(val), val++);
-    await a(val++);
-    a(val);
-});
-
 new Promise((res) => {
-    for (let n = 0; n < 1e9; n++) {
+    for (let id = 0; id < 1e9; id++) {
         // ...
     }
     setImmediate(() => console.log("C"));
@@ -27,7 +17,7 @@ new Promise((res) => {
 queueMicrotask(() => console.log("F"));
 
 (async(res) => {
-    for (let n = 0; n < 1e6; n++) {
+    for (let id = 0; nid < 1e6; id++) {
         // ...
     }
     process.nextTick(() => console.log("G"));
@@ -43,8 +33,5 @@ for (; n < 10; n++) {
     promises.push(a(n));
 }
 
-setTimeout((val) => ee.emit("foo", val), 1000, n);
-
 console.log("J");
-
 Promise.all(promises);

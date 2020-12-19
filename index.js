@@ -1,25 +1,16 @@
 "use strict";
 
 // Require Third-party Dependencies
-const meriyah = require("meriyah");
 const astring = require("astring");
+const { Program } = require("node-estree");
 
 // Require presets
 const one = require("./preset/iterate_timeout");
 const two = require("./preset/iife_async");
 
-const nodesRoot = [];
-nodesRoot.push(two.create());
+const AST = new Program();
 
-console.log(JSON.stringify(nodesRoot, null, 2))
-
-for (const node of nodesRoot) {
-    const code = astring.generate(node);
-    console.log(code);
-}
-
-// const code = `(async() => {
-
-// })().then(console.log)`;
-// const { body } = meriyah.parse(code);
-// console.log(JSON.stringify(body, null, 4));
+AST.add(one.generate());
+AST.add(two.generate());
+// console.log(JSON.stringify(AST.body, null, 4));
+console.log(astring.generate(AST.toJSON()));

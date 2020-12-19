@@ -1,27 +1,48 @@
+/* eslint-disable no-param-reassign */
 "use strict";
 
-const utils = require("../src/utils");
-const node = require("../src/nodejs");
-const ecma = require("../src/ecmascript");
+// Require Third-party Dependencies
+const {
+    Expression: {
+        BinaryExpression,
+        UpdateExpression
+    },
+    Statements: { ForStatement, Block },
+    Identifier,
+    Literal,
+    VariableDeclaration
+} = require("node-estree");
 
-// CODE GENERATED:
+// Require Internal Dependencies
+const { log, setTimeout } = require("../src/utils.js");
+
+// CODE TO GENERATE:
 // for (let i = 0; i < 5; i++) {
 //     setTimeout(() => {
 //         console.log(i);
 //     }, 1);
 // }
 
-function create(iteration = 5) {
-    const logStmt = utils.ExprStmt(node.log(utils.createIdentifier("i")));
+function generate(start = 0, end = 5) {
+    if (start > end) {
+        end = start;
+    }
 
-    const nodeTimeOut = utils.ExprStmt(node.timeout([
-        ecma.createArrow(false, logStmt)
-    ]));
+    const id = new Identifier("i");
+    const forBlockBody = [
+        setTimeout([log([id])], new Literal(1))
+    ];
 
-    return ecma.createForStmt([nodeTimeOut], utils.createLiteral(iteration));
+    return ForStatement(
+        VariableDeclaration.createOne("let", id.name, new Literal(start)),
+        BinaryExpression("<", id, new Literal(end)),
+        UpdateExpression("++", void 0, id),
+        Block(forBlockBody)
+    );
 }
 
 module.exports = {
+    level: "easy",
     mustBeRoot: false,
-    create
+    generate
 };
